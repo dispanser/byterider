@@ -13,7 +13,7 @@ import static org.kulturguerilla.byterider.ByteRider.*;
  *   if you use the static methods and provide your own offset, it's not).
  * - the EnumField could wrap anything that has a meaningful mapping between
  *   ints and an (enumerable) number of objects.
- * - EnumField uses IntField under the hood, and just applies the fromObject and
+ * - IntMappedObjField uses IntField under the hood, and just applies the fromObject and
  *   toObject methods as convenience.
  */
 public class ByteRiderDemo {
