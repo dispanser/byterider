@@ -14,3 +14,6 @@ public class BitMaskExample {
 }
 #+END_SRC
 
+** Example
+
+See [[src/test/java/org/kulturguerilla/ByteRiderDemo.java][Demo Source]].
