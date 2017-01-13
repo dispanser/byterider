@@ -1,0 +1,16 @@
+* Byte Rider
+
+** Introduction
+
+Byte Rider is a Java library that aims to simplify bit field operations commonly
+used to abuse primitive data types like long to store multiple flags or other
+values inside a single value.
+
+#+NAME: example
+#+BEGIN_SRC java
+public class BitMaskExample {
+    private static final long FLAG01_MASK = 0x0000000000000001;
+    private static final long FLAG02_MASK = 0x0000000000000002;
+}
+#+END_SRC
+
