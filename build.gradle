@@ -8,7 +8,6 @@ group = 'org.kulturguerilla'
 version = '0.0.4-SNAPSHOT'
 description = 'library to safely map multiple values (boolean, int, enum) into a single primitive long field, abstracting away the required bit shifting operations'
 
-
 repositories {
 	jcenter()
 	mavenLocal()
@@ -34,21 +33,14 @@ artifacts {
 /*     sign configurations.archives */
 /* } */
 
-ext {
-	slf4jVersion   = '1.7.18'
-	logbackVersion = '1.1.6'
-	assertJVersion = '3.3.0'
-	junitVersion   = '4.12'
-}
-
 // In this section you declare the dependencies for your production and test code
 dependencies {
 	// logging dependencies
 	compile group: 'org.slf4j', 		name: 'slf4j-api', 			version: slf4jVersion
 
 	// common test dependencies
-	testRuntime group: 'ch.qos.logback', 	name: 'logback-core', 		version: logbackVersion
-	testRuntime group: 'ch.qos.logback', 	name: 'logback-classic',	version: logbackVersion
-	testCompile group: 'org.assertj',	name: 'assertj-core',		version: assertJVersion
-    testCompile group: 'junit', 		name: 'junit', 				version: junitVersion
+	testRuntime group: 'ch.qos.logback', name: 'logback-core', 	   version: logbackVersion
+	testRuntime group: 'ch.qos.logback', name: 'logback-classic',  version: logbackVersion
+	testCompile group: 'org.assertj',	 name: 'assertj-core',	   version: assertJVersion
+	testCompile group: 'junit', 		 name: 'junit', 		   version: junitVersion
 }
