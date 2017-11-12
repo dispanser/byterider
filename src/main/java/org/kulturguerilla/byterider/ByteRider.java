@@ -9,17 +9,22 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Helper Class to simplify handling of bit-fuddling for storing
- * multiple different values inside a single short, int or long.
- *
- * Note: currently only long is supported.
- *
- * Currently implemented as an interface to allow mixin-style usage.
+ * multiple different values inside a single primiteve long.
  */
 public class ByteRider {
 	private ArrayList<BitField> fields = new ArrayList<>();
 
 	private static final Logger log = LoggerFactory.getLogger(ByteRider.class);
 
+	/**
+	 * Creates a BoolField with the provided name.
+	 *
+	 * Reserves the lowest currently unused bit to hold information about a single
+	 * boolean value.
+	 *
+	 * @param name the name of the field (for providing better error messages)
+	 * @return bool field representing storage for a single boolean value
+	 */
 	public BoolField addBool(String name) {
 		int offset = lowestUnusedOffset(fields);
 		log.debug("initializing bool starting at offset: " + offset);
@@ -28,10 +33,32 @@ public class ByteRider {
 		return b;
 	}
 
+	/**
+	 * creates an {@link IntField} with the provided name, values ranging from
+	 * zero to maxValue, inclusive.
+	 *
+	 * Reserves the required number of bits to store an int value in the desired range.
+	 *
+	 * @param maxValue maximum valid value for the field.
+	 * @param name field name
+	 * @return int field representing storage for the int in the given range.
+	 */
 	public IntField addInt(int maxValue, String name) {
 		return addInt(0, maxValue, name);
 	}
 
+
+	/**
+	 * creates an {@link IntField} with the provided name, values ranging from
+	 * minValue to maxValue, inclusive.
+	 *
+	 * Reserves the required number of bits to store an int value in the desired range.
+	 *
+	 * @param minValue minimum valid value for the field
+	 * @param maxValue maximum valid value for the field
+	 * @param name field name
+	 * @return int field representing storage for the int in the given range.
+	 */
 	public IntField  addInt(int minValue, int maxValue, String name) {
 		int offset = lowestUnusedOffset(fields);
 		log.debug("initializing int field starting at offset: " + offset);
@@ -40,11 +67,48 @@ public class ByteRider {
 		return i;
 	}
 
-	public <T> IntMappedObjField<T> addObj(int values, Function<T, Integer> fromObject,
-			Function<Integer, T> toObject, String name) {
+	/**
+	 * creates a field for storing objects of type T, with the given number of
+	 * distinct values and functions for converting between int and T.
+	 *
+	 * TODO: add use cases, e.g. LengthInMetres(100), or enum(?) or map-lookup
+	 *   without providing access to the map directly, using the functions.
+	 *
+	 * @param cardinality the number of different objects to be stored
+	 * @param fromObject function that accepts an object of type T and returns the
+	 * 	  canonical Integer representation.
+	 * @param toObject function that accepts an Integer and returns an object
+	 *    of type T.
+	 * @param name field name
+	 * @return int field representing storage for the int in the given range.
+	 */
+	public <T> IntMappedObjField<T> addObj(int cardinality,
+			Function<T, Integer> fromObject,
+			Function<Integer, T> toObject, String name)
+	{
+		int offset = lowestUnusedOffset(fields);
+		log.debug("initializing obj field starting at offset: " + offset);
+		IntMappedObjField<T> e = new ObjFieldImpl<T>(offset, cardinality,
+				fromObject, toObject, name);
+		fields.add(e);
+		return e;
+	}
+
+	/**
+	 * creates a field for storing an enum into the bit store.
+	 *
+	 * @param enumClass class representation of the enum to be stored
+	 * @param name field name
+	 * @return enum field providing access to storage for the provided enum.
+	 */
+	public <T extends Enum<T>> IntMappedObjField<T> addEnum(
+			Class<T> enumClass, String name)
+	{
 		int offset = lowestUnusedOffset(fields);
 		log.debug("initializing enum field starting at offset: " + offset);
-		IntMappedObjField<T> e = new EnumFieldImpl<T>(offset, values, fromObject, toObject, name);
+		T [] candidates = enumClass.getEnumConstants();
+		IntMappedObjField<T> e = new ObjFieldImpl<T>(offset, candidates.length,
+				en -> en.ordinal(), i -> candidates[i], name);
 		fields.add(e);
 		return e;
 	}
@@ -181,12 +245,12 @@ public class ByteRider {
 		}
 	}
 
-	public static class EnumFieldImpl<T> implements IntMappedObjField<T> {
+	public static class ObjFieldImpl<T> implements IntMappedObjField<T> {
 		final Function<Integer, T> toObject;
 		final Function<T, Integer> fromObject;
 		final IntField intField;
 
-		public EnumFieldImpl(int offset, int values, Function<T, Integer> fromObject,
+		public ObjFieldImpl(int offset, int values, Function<T, Integer> fromObject,
 				Function<Integer, T> toObject, String name)
 		{
 			this.intField = IntImpl.create(offset, 0, values+1, name);

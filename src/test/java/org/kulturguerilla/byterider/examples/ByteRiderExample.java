@@ -30,11 +30,13 @@ public class ByteRiderExample implements ExampleInterface {
 	/** field representing storage for an integer in range -4, 4 inclusive. */
 	private static final IntField intField = br.addInt(-4, 4, "intField");
 
-	private static final IntMappedObjField<SampleEnum> eField = br.addObj(
-			SampleEnum.values().length,
-			e -> e.ordinal(),
-			i -> SampleEnum.values()[i],
-		    "sample enum");
+	private static final IntMappedObjField<SampleEnum> eField = br.addEnum(
+			SampleEnum.class, "sample enum");
+	// private static final IntMappedObjField<SampleEnum> eField = br.addObj(
+	// 		SampleEnum.values().length,
+	// 		e -> e.ordinal(),
+	// 		i -> SampleEnum.values()[i],
+	// 	    "sample enum");
 
 	static {
 		br.checkFields();
