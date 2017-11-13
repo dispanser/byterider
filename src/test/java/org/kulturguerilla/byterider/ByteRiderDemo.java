@@ -27,7 +27,7 @@ public class ByteRiderDemo {
 	private final static IntField yDecaMicro = br.addInt(-16383, 16384, "yStart");
 	private final static IntMappedObjField<MyEnum> eField = br.addObj(3, MyEnum::toInt, MyEnum::fromInt, "my enum");
 
-	public enum MyEnum {
+	public static enum MyEnum {
 		NONE(0), V1(1), V2(2);
 
 		final int ord;
