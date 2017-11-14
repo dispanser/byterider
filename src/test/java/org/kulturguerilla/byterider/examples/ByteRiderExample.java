@@ -32,11 +32,6 @@ public class ByteRiderExample implements ExampleInterface {
 
 	private static final IntMappedObjField<SampleEnum> eField = br.addEnum(
 			SampleEnum.class, "sample enum");
-	// private static final IntMappedObjField<SampleEnum> eField = br.addObj(
-	// 		SampleEnum.values().length,
-	// 		e -> e.ordinal(),
-	// 		i -> SampleEnum.values()[i],
-	// 	    "sample enum");
 
 	static {
 		br.checkFields();

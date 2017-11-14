@@ -28,10 +28,10 @@ It's best illustrated with an example:
 	public void setSampleEnum(SampleEnum e) {this.data = eField.set(data, e);}
 #+END_SRC
 
-Also see [[src/test/java/org/kulturguerilla/byterider/ByteRiderDemo.java][Full example source, with comments.]]
+Also see [[src/test/java/org/kulturguerilla/byterider/ByteRiderDemo.java][full example source, with comments.]]
 
 The basic idea is to define a primitive type (~long data~ in our example), and
-(ab)use its bits to store multiple smaller properties, thereby decreasing memory
+(ab)use its bits to store multiple smaller attributes, thereby decreasing memory
 footprint and data locality, while avoiding the tedious and error-prone bit
 shifting that is required when doing this manually.
 
@@ -87,6 +87,9 @@ care of. The actual storing is based on the ordinal of the enum instances.
 
 *** Arbitrary objects with known cardinality
 
+The enum field from the previous section could also be written in its more
+generic form, based on functions to convert from and to int values, like so:
+
 #+BEGIN_SRC java
 	private static final IntMappedObjField<SampleEnum> eField = br.addObj(
 			SampleEnum.values().length,
@@ -94,3 +97,31 @@ care of. The actual storing is based on the ordinal of the enum instances.
 			i -> SampleEnum.values()[i],
 		    "sample enum");
 #+END_SRC
+
+Other use cases might include automatic wrapping and unwrapping:
+
+#+BEGIN_SRC java
+public class LengthInMetres {
+  public final len;
+  public LengthInMetres(int len) {
+    this.len = len;
+  }
+}
+#+END_SRC
+
+#+BEGIN_SRC java
+	private static final IntMappedObjField<LengthInMetres> eField = br.addObj(
+    32767, lm -> lm.len, LengthInMetres::new, "length");
+#+END_SRC
+
+Since in a typical JVM implementation, each ~LengthInMetres~ instance occupies
+16 bytes of memory, and the reference in the attribute owner consumes another
+4 bytes, it's possible to reduce heap size significantly.
+
+It also reduces the number of long-living objects (length will become ephemeral).
+** Not yet implemented
+*** Nullable fields
+Conveniently store ~Integer~, ~Long~, ~Enums~ or other objects that are nullable,
+i.e. reserve a representation for null and handle it properly.
+
+*** Wrapping unsafe, memory-mapped and byte buffers
