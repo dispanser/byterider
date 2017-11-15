@@ -125,7 +125,7 @@ public class ByteRider {
 	}
 
 	static BoolField createBoolField(int idx, String name) {
-		return new LongBool(idx, name);
+		return new BoolImpl(idx, name);
 	}
 
 	static IntField createIntField(int offset, int minValue, int maxValue, String name) {
@@ -207,13 +207,13 @@ public class ByteRider {
 	/**
 	 * represents a bool as a single bit inside a long.
 	 */
-	public static class LongBool extends BaseBitField implements BoolField {
+	public static class BoolImpl extends BaseBitField implements BoolField {
 
-		public LongBool(int idx, String name) {
+		public BoolImpl(int idx, String name) {
 			this(idx, name, Size.LONG_SET);
 		}
 
-		public LongBool(int idx, String name, Size size) {
+		public BoolImpl(int idx, String name, Size size) {
 			super(name, 1L << idx);
 			if (idx >= size.size || idx < 0) {
 				throw new IllegalArgumentException("bit index out of range: idx="
