@@ -29,12 +29,12 @@ public class ByteRiderTests {
 	private BoolField b12 = createBoolField(12, "testField at bit 12");
 
 	@Test public void outOfRangeIndexFails() {
-		assertThatThrownBy(() -> new LongBool(13, "off", BYTE_SET))
+		assertThatThrownBy(() -> new BoolImpl(13, "off", BYTE_SET))
 			.isInstanceOf(IllegalArgumentException.class);
 	}
 
 	@Test public void negativeBitFails() {
-		assertThatThrownBy(() -> new LongBool(-1, "off", BYTE_SET))
+		assertThatThrownBy(() -> new BoolImpl(-1, "off", BYTE_SET))
 			.isInstanceOf(IllegalArgumentException.class);
 	}
 
