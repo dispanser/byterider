@@ -17,7 +17,7 @@ public class ByteRider {
 	private static final Logger log = LoggerFactory.getLogger(ByteRider.class);
 
 	/**
-	 * Creates a BoolField with the provided name.
+	 * Creates a {@link BoolField} with the provided name.
 	 *
 	 * Reserves the lowest currently unused bit to hold information about a single
 	 * boolean value.
@@ -74,6 +74,7 @@ public class ByteRider {
 	 * TODO: add use cases, e.g. LengthInMetres(100), or enum(?) or map-lookup
 	 *   without providing access to the map directly, using the functions.
 	 *
+	 * @param <T> the type of the object to be stored
 	 * @param cardinality the number of different objects to be stored
 	 * @param fromObject function that accepts an object of type T and returns the
 	 * 	  canonical Integer representation.
@@ -97,6 +98,10 @@ public class ByteRider {
 	/**
 	 * creates a field for storing an enum into the bit store.
 	 *
+	 * Automatically copmutes the required number of bits and uses the
+	 * Enums ordinal function to convert to integer under the hood.
+	 *
+	 * @param <T> the type of the enum to be stored.
 	 * @param enumClass class representation of the enum to be stored
 	 * @param name field name
 	 * @return enum field providing access to storage for the provided enum.
@@ -163,20 +168,40 @@ public class ByteRider {
 		@Override public long mask() { return mask; }
 	}
 
+	/**
+	 * Represents a {@link BitField} containing a single, non-nullable,
+	 * primitive boolean.
+	 */
 	public interface BoolField extends BitField {
 		boolean get(long field);
 		long set(long field);
 		long set(long field, boolean val);
 	}
 
+	/**
+	 * Represents a {@link BitField} containing a primitive, non-nullable
+	 * int value.
+	 */
 	public interface IntField extends BitField {
 		int get(long field);
 		long set(long field, int value);
 	}
 
+	/**
+	 * Represents a {@link BitField} containing an non-nullable object.
+	 */
 	public interface IntMappedObjField<T> extends BitField {
 		T get(long field);
 		long set(long field, T x);
+	}
+
+	/**
+	 * Represents a {@link BitField} containing a single, nullable,
+	 * primitive boolean.
+	 */
+	public interface IntegerField extends BitField {
+		Integer get(long field);
+		long set(long field, Integer x);
 	}
 
 	/**
