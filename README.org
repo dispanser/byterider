@@ -9,7 +9,7 @@ It's best illustrated with an example:
 
 #+NAME: example
 #+BEGIN_SRC java
-	static ByteRider br = new ByteRider();
+	static ByteRider br = new ByteRider(Size.LONG_SET);
 	private static final BoolField booleanField = br.addBool("booleanField");
 	private static final IntField  intField     = br.addInt(-4, 4, "intField");
 	private static final IntMappedObjField<SampleEnum> eField = br.addEnum(

@@ -11,6 +11,7 @@ import static java.util.Arrays.asList;
 import java.util.List;
 
 import org.junit.Test;
+import org.junit.Ignore;
 
 public class ByteRiderTests {
 
@@ -27,16 +28,6 @@ public class ByteRiderTests {
 
 	// tests for Bool
 	private BoolField b12 = createBoolField(12, "testField at bit 12");
-
-	@Test public void outOfRangeIndexFails() {
-		assertThatThrownBy(() -> new BoolImpl(13, "off", BYTE_SET))
-			.isInstanceOf(IllegalArgumentException.class);
-	}
-
-	@Test public void negativeBitFails() {
-		assertThatThrownBy(() -> new BoolImpl(-1, "off", BYTE_SET))
-			.isInstanceOf(IllegalArgumentException.class);
-	}
 
 	@Test public void getTrue() {
 		assertThat(b12.get(1<<12)).as("set bit should yield true").isTrue();
@@ -140,6 +131,31 @@ public class ByteRiderTests {
 			.isInstanceOf(IllegalArgumentException.class);
 	}
 
+	// test for using smaller underlying storage
+	@Test public void byteStorageOverflow() {
+		ByteRider br = new ByteRider(Size.BYTE_SET);
+		for(int i = 0; i < 8; ++i) {
+			br.addBool("bit" + i);
+		}
+		assertThatThrownBy(() -> br.addBool("bit8 is too much"))
+			.isInstanceOf(IllegalArgumentException.class);
+	}
+
+	@Test public void intStorageOverflow() {
+		ByteRider br = new ByteRider(Size.INT_SET);
+		br.addInt(1<<29, "00 to 30 bits");
+		assertThatThrownBy(() -> br.addInt(5, "31 to 33"))
+			.isInstanceOf(IllegalArgumentException.class);
+	}
+
+	@Test public void longStorageOverflow() {
+		ByteRider br = new ByteRider(Size.LONG_SET);
+		br.addInt(1<<29, "00 to 29 bits");
+		br.addInt(1<<29, "30 to 60 bits");
+		assertThatThrownBy(() -> br.addInt(16, "61 to 65"))
+			.isInstanceOf(IllegalArgumentException.class);
+	}
+
 	// first unused bit offset
 	@Test public void emptyYieldsZero() {
 		assertThat(lowestUnusedOffset(asList())).isEqualTo(0);
@@ -159,6 +175,14 @@ public class ByteRiderTests {
 
 	@Test public void singleBoolAtLastPosYields64() {
 		assertThat(lowestUnusedOffset(asList(createBoolField(63, "bit0")))).isEqualTo(64);
+	}
+
+	// test mask computation for Size enum
+	@Test public void sizeMasks() {
+		assertThat(Size.BYTE_SET.mask()).isEqualTo(0xFF);
+		assertThat(Size.SHORT_SET.mask()).isEqualTo(0xFFFF);
+		assertThat(Size.INT_SET.mask()).isEqualTo(0xFFFFFFFFL);
+		assertThat(Long.toHexString(Size.LONG_SET.mask())).isEqualTo("ffffffffffffffff");
 	}
 }
 

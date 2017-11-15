@@ -9,12 +9,18 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Helper Class to simplify handling of bit-fuddling for storing
- * multiple different values inside a single primiteve long.
+ * multiple different values inside a single primitive long.
  */
 public class ByteRider {
 	private ArrayList<BitField> fields = new ArrayList<>();
 
 	private static final Logger log = LoggerFactory.getLogger(ByteRider.class);
+
+	private final Size size;
+
+	public ByteRider(Size size) {
+		this.size = size;
+	}
 
 	/**
 	 * Creates a {@link BoolField} with the provided name.
@@ -29,8 +35,18 @@ public class ByteRider {
 		int offset = lowestUnusedOffset(fields);
 		log.debug("initializing bool starting at offset: " + offset);
 		BoolField b = createBoolField(offset, name);
-		fields.add(b);
+		addField(b);
 		return b;
+	}
+
+	private void addField(BitField bf) {
+		log.info("{} <> {}", bf.highestBit(), size.size);
+		if (bf.highestBit() >= size.size) {
+			throw new IllegalArgumentException("field overflows availabile bits: " +
+					bf.name());
+		} else {
+			this.fields.add(bf);
+		}
 	}
 
 	/**
@@ -47,7 +63,6 @@ public class ByteRider {
 		return addInt(0, maxValue, name);
 	}
 
-
 	/**
 	 * creates an {@link IntField} with the provided name, values ranging from
 	 * minValue to maxValue, inclusive.
@@ -63,7 +78,7 @@ public class ByteRider {
 		int offset = lowestUnusedOffset(fields);
 		log.debug("initializing int field starting at offset: " + offset);
 		IntField i = createIntField(offset, minValue, maxValue, name);
-		fields.add(i);
+		addField(i);
 		return i;
 	}
 
@@ -91,7 +106,7 @@ public class ByteRider {
 		log.debug("initializing obj field starting at offset: " + offset);
 		IntMappedObjField<T> e = new ObjFieldImpl<T>(offset, cardinality,
 				fromObject, toObject, name);
-		fields.add(e);
+		addField(e);
 		return e;
 	}
 
@@ -114,7 +129,7 @@ public class ByteRider {
 		T [] candidates = enumClass.getEnumConstants();
 		IntMappedObjField<T> e = new ObjFieldImpl<T>(offset, candidates.length,
 				en -> en.ordinal(), i -> candidates[i], name);
-		fields.add(e);
+		addField(e);
 		return e;
 	}
 
@@ -137,6 +152,11 @@ public class ByteRider {
 
 		final byte size;
 
+		final long mask() {
+			// return (1L << size)-1;
+			return (1L << (size-1)) - 1 + (1L << (size-1));
+		}
+
 		private Size(int size) {
 			this.size = (byte) size;
 		}
@@ -145,20 +165,23 @@ public class ByteRider {
 	interface BitField {
 		long clear(long field);
 		long mask();
+		int highestBit();
 		String name();
 	}
 
-	static class BaseBitField implements BitField
+	static abstract class BaseBitField implements BitField
 	{
 		protected final long mask;
 		protected final long clear;
 
 		private final String name;
+		private final int highestBit;
 
-		BaseBitField(String name, long mask) {
+		BaseBitField(String name, long mask, int highestBit) {
 			this.name = name;
 			this.mask  = mask;
 			this.clear= ~mask;
+			this.highestBit = highestBit;
 		}
 
 		@Override public String name() { return name; }
@@ -166,6 +189,8 @@ public class ByteRider {
 		@Override public long clear(long field) { return field & clear; }
 
 		@Override public long mask() { return mask; }
+
+		@Override public int highestBit() { return this.highestBit; }
 	}
 
 	/**
@@ -205,20 +230,12 @@ public class ByteRider {
 	}
 
 	/**
-	 * represents a bool as a single bit inside a long.
+	 * represents a bool as a single bit.
 	 */
 	public static class BoolImpl extends BaseBitField implements BoolField {
 
 		public BoolImpl(int idx, String name) {
-			this(idx, name, Size.LONG_SET);
-		}
-
-		public BoolImpl(int idx, String name, Size size) {
-			super(name, 1L << idx);
-			if (idx >= size.size || idx < 0) {
-				throw new IllegalArgumentException("bit index out of range: idx="
-						+ idx + "; available=" + size.size + " for field " + name);
-			}
+			super(name, 1L << idx, idx);
 		}
 
 		@Override public boolean get(long field) {
@@ -244,13 +261,13 @@ public class ByteRider {
 		final private int maxValue;
 
 		public static IntImpl create(int offset, int minValue, int maxValue, String name) {
-			long bits = bitsRequired(maxValue+1l-minValue);
+			int bits = bitsRequired(maxValue+1l-minValue);
 			long mask = ((1L << bits) - 1) << offset;
-			return new IntImpl(mask, offset, minValue, maxValue, name);
+			return new IntImpl(mask, offset, minValue, maxValue, name, offset + bits - 1);
 		}
 
-		IntImpl(long mask, int offset, int minValue, int maxValue, String name) {
-			super(name, mask);
+		IntImpl(long mask, int offset, int minValue, int maxValue, String name, int highestBit) {
+			super(name, mask, highestBit);
 			this.offset = offset;
 			this.minValue = minValue;
 			this.maxValue = maxValue;
@@ -296,6 +313,8 @@ public class ByteRider {
 		@Override public long clear(long field) { return intField.clear(field); }
 
 		@Override public long mask() { return intField.mask(); }
+
+		@Override public int highestBit() { return intField.highestBit(); }
 	}
 
 	/**

@@ -18,7 +18,7 @@ import static org.kulturguerilla.byterider.ByteRider.*;
  */
 public class ByteRiderDemo {
 
-	static ByteRider br = new ByteRider();
+	static ByteRider br = new ByteRider(Size.LONG_SET);
 
 	private final static BoolField drivable = br.addBool("isDrivable");
 	private final static IntField net2Class = br.addInt(6, "net2Class");

@@ -22,7 +22,7 @@ public class ByteRiderExample implements ExampleInterface {
 	 * If you are running out of bits, to manage a second primitive value a second
 	 * instance is needed.
 	 */
-	static ByteRider br = new ByteRider();
+	static ByteRider br = new ByteRider(Size.LONG_SET);
 
 	/** field representing storage for a single primitive boolean. */
 	private static final BoolField booleanField = br.addBool("booleanField");
