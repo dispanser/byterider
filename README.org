@@ -40,22 +40,21 @@ shifting that is required when doing this manually.
 For a complete example, see [[src/test/java/org/kulturguerilla/byterider/ByteRiderDemo.java][Demo Source]].
 
 ** Supported Fields
-
 *** Primitive Boolean (boolean)
 
 Primitive boolean values are the simplest and thus most common form of bit voodoo.
 A boolean consumes a single bit from the long value, and usage is straight forward:
 
 #+BEGIN_SRC java
-  private static final BoolField flag01 = br.addBool("flag01");
+private static final BoolField flag01 = br.addBool("flag01");
 
-	public boolean booleanField() {
-		return booleanField.get(data);
-	}
+public boolean booleanField() {
+	return booleanField.get(data);
+}
 
-	public void setBooleanField(boolean value) {
-		this.data = booleanField.set(data, value);
-	}
+public void setBooleanField(boolean value) {
+	this.data = booleanField.set(data, value);
+}
 #+END_SRC
 
 The ~get~ method accepts the underlying storage primitive and returns the
@@ -84,18 +83,18 @@ care of. The actual storing is based on the ordinal of the enum instances.
 			SampleEnum.class, "sample enum");
 #+END_SRC
 
-
 *** Arbitrary objects with known cardinality
 
-The enum field from the previous section could also be written in its more
-generic form, based on functions to convert from and to int values, like so:
+The enum field from the previous section could also be written in this more
+generic form, based on functions to convert from and to int values. This is
+how it's actually implemented under the hood, anyway:
 
 #+BEGIN_SRC java
-	private static final IntMappedObjField<SampleEnum> eField = br.addObj(
-			SampleEnum.values().length,
-			e -> e.ordinal(),
-			i -> SampleEnum.values()[i],
-		    "sample enum");
+private static final IntMappedObjField<SampleEnum> eField = br.addObj(
+	SampleEnum.values().length,
+	e -> e.ordinal(),
+	i -> SampleEnum.values()[i],
+	"sample enum");
 #+END_SRC
 
 Other use cases might include automatic wrapping and unwrapping:
@@ -110,8 +109,8 @@ public class LengthInMetres {
 #+END_SRC
 
 #+BEGIN_SRC java
-	private static final IntMappedObjField<LengthInMetres> eField = br.addObj(
-    32767, lm -> lm.len, LengthInMetres::new, "length");
+private static final IntMappedObjField<LengthInMetres> eField = br.addObj(
+  32767, lm -> lm.len, LengthInMetres::new, "length");
 #+END_SRC
 
 Since in a typical JVM implementation, each ~LengthInMetres~ instance occupies
@@ -119,6 +118,7 @@ Since in a typical JVM implementation, each ~LengthInMetres~ instance occupies
 4 bytes, it's possible to reduce heap size significantly.
 
 It also reduces the number of long-living objects (length will become ephemeral).
+
 ** Not yet implemented
 *** Nullable fields
 Conveniently store ~Integer~, ~Long~, ~Enums~ or other objects that are nullable,
