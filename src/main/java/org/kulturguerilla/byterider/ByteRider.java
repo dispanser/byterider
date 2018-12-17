@@ -22,6 +22,10 @@ public class ByteRider {
 		this.size = size;
 	}
 
+	public ByteRider() {
+		this(Size.LONG_SET);
+	}
+
 	/**
 	 * Creates a {@link BoolField} with the provided name.
 	 *
@@ -81,6 +85,23 @@ public class ByteRider {
 		addField(i);
 		return i;
 	}
+
+	public LongField addLong(long maxValue) {
+		return addLong(0, maxValue, "");
+	}
+
+	public LongField addLong(long maxValue, String name) {
+		return addLong(0, maxValue, name);
+	}
+
+	public LongField addLong(long minValue, long maxValue, String name) {
+		int offset = lowestUnusedOffset(fields);
+		LongField i = createLongField(offset, minValue, maxValue, name);
+		addField(i);
+		return i;
+	}
+
+
 
 	/**
 	 * creates a field for storing objects of type T, with the given number of
@@ -145,6 +166,10 @@ public class ByteRider {
 
 	static IntField createIntField(int offset, int minValue, int maxValue, String name) {
 		return IntImpl.create(offset, minValue, maxValue, name);
+	}
+
+	static LongField createLongField(int offset, long minValue, long maxValue, String name) {
+		return LongImpl.create(offset, minValue, maxValue, name);
 	}
 
 	public enum Size {
@@ -213,6 +238,15 @@ public class ByteRider {
 	}
 
 	/**
+	 * Represents a {@link BitField} containing a primitive, non-nullable
+	 * long value.
+	 */
+	public interface LongField extends BitField {
+		long get(long field);
+		long set(long field, long value);
+	}
+
+	/**
 	 * Represents a {@link BitField} containing an non-nullable object.
 	 */
 	public interface IntMappedObjField<T> extends BitField {
@@ -278,6 +312,42 @@ public class ByteRider {
 		}
 
 		public long set(long field, int value) {
+			if (value < minValue || value > maxValue) {
+				throw new IllegalArgumentException(String.format
+						("value %d out of range [%d, %d]", value, minValue, maxValue));
+			} else {
+				return field & clear | ((value - minValue) << offset);
+			}
+		}
+	}
+
+	/**
+	 * represents an int covering certain bits of a long.
+	 */
+	public static class LongImpl extends BaseBitField implements LongField {
+
+		final private int offset;
+		final private long minValue; // int misbehaves on crossing 32bit boundaries.
+		final private long maxValue;
+
+		public static LongImpl create(int offset, long minValue, long maxValue, String name) {
+			int bits = bitsRequired(maxValue+1l-minValue);
+			long mask = ((1L << bits) - 1) << offset;
+			return new LongImpl(mask, offset, minValue, maxValue, name, offset + bits - 1);
+		}
+
+		LongImpl(long mask, int offset, long minValue, long maxValue, String name, int highestBit) {
+			super(name, mask, highestBit);
+			this.offset = offset;
+			this.minValue = minValue;
+			this.maxValue = maxValue;
+		}
+
+		@Override public long get(long field) {
+			return ((field & mask) >> offset) + minValue;
+		}
+
+		@Override public long set(long field, long value) {
 			if (value < minValue || value > maxValue) {
 				throw new IllegalArgumentException(String.format
 						("value %d out of range [%d, %d]", value, minValue, maxValue));
