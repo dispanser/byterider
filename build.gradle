@@ -9,7 +9,7 @@ plugins {
 }
 
 group = 'org.kulturguerilla'
-version = '1.0.1'
+version = '1.0.2-SNAPSHOT'
 description = 'library to safely map multiple values (boolean, int, enum) into a single primitive long field, abstracting away the required bit shifting operations'
 
 
