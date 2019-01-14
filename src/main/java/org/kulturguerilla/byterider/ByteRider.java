@@ -160,15 +160,15 @@ public class ByteRider {
 		checkFields(fields.toArray(new BitField[0]));
 	}
 
-	static BoolField createBoolField(int idx, String name) {
+	public static BoolField createBoolField(int idx, String name) {
 		return new BoolImpl(idx, name);
 	}
 
-	static IntField createIntField(int offset, int minValue, int maxValue, String name) {
+	public static IntField createIntField(int offset, int minValue, int maxValue, String name) {
 		return IntImpl.create(offset, minValue, maxValue, name);
 	}
 
-	static LongField createLongField(int offset, long minValue, long maxValue, String name) {
+	public static LongField createLongField(int offset, long minValue, long maxValue, String name) {
 		return LongImpl.create(offset, minValue, maxValue, name);
 	}
 
