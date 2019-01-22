@@ -235,6 +235,8 @@ public class ByteRider {
 	public interface IntField extends BitField {
 		int get(long field);
 		long set(long field, int value);
+		int maxValue();
+		int minValue();
 	}
 
 	/**
@@ -244,6 +246,8 @@ public class ByteRider {
 	public interface LongField extends BitField {
 		long get(long field);
 		long set(long field, long value);
+		long minValue();
+		long maxValue();
 	}
 
 	/**
@@ -307,17 +311,25 @@ public class ByteRider {
 			this.maxValue = maxValue;
 		}
 
-		public int get(long field) {
+		@Override public int get(long field) {
 			return (int) (((field & mask) >> offset) + minValue);
 		}
 
-		public long set(long field, int value) {
+		@Override public long set(long field, int value) {
 			if (value < minValue || value > maxValue) {
 				throw new IllegalArgumentException(String.format
 						("value %d out of range [%d, %d]", value, minValue, maxValue));
 			} else {
 				return field & clear | ((value - minValue) << offset);
 			}
+		}
+
+		@Override public int minValue() {
+			return (int) minValue;
+		}
+
+		@Override public int maxValue() {
+			return maxValue;
 		}
 	}
 
@@ -354,6 +366,14 @@ public class ByteRider {
 			} else {
 				return field & clear | ((value - minValue) << offset);
 			}
+		}
+
+		@Override public long minValue() {
+			return (int) minValue;
+		}
+
+		@Override public long maxValue() {
+			return maxValue;
 		}
 	}
 
