@@ -44,7 +44,7 @@ public class ByteRider {
 	}
 
 	private void addField(BitField bf) {
-		log.info("{} <> {}", bf.highestBit(), size.size);
+		log.debug("{} <> {}", bf.highestBit(), size.size);
 		if (bf.highestBit() >= size.size) {
 			throw new IllegalArgumentException("field overflows availabile bits: " +
 					bf.name());
